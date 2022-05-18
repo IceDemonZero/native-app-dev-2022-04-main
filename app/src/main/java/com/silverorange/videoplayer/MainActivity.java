@@ -1,18 +1,17 @@
 package com.silverorange.videoplayer;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Spanned;
 import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 
+import org.commonmark.node.Node;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,11 +30,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
+import io.noties.markwon.Markwon;
 
 public class MainActivity extends AppCompatActivity {
     private ExoPlayer videoPlayer;
     private StyledPlayerView videoView;
     private TextView description;
+    private Markwon markwon;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,15 +52,23 @@ public class MainActivity extends AppCompatActivity {
 
         DataFetcher fetcher = new DataFetcher();
         fetcher.execute();
+
+        markwon = Markwon.create(this);
+
     }
 
     private void onBackgroundTaskDataObtained(List<String> results) {
         MediaItem mediaItem = MediaItem.fromUri(results.get(0));
         videoPlayer.addMediaItem(mediaItem);
-        videoPlayer.prepare();
-        //videoPlayer.play();
+        videoPlayer.prepare();//videoPlayer.play();
 
-        description.setText(results.get(1) + "\n");
+        // parse markdown to commonmark-java Node
+        final Node node = markwon.parse(results.get(2));
+        // create styled text from parsed Node
+        final Spanned markdown = markwon.render(node);
+        // use it on a TextView
+        markwon.setParsedMarkdown(description, markdown);
+        //description.setText(results.get(1) + "\n" + markdown);
     }
 
     private class DataFetcher extends AsyncTask<Void,Void,List<String>> {
@@ -73,8 +82,9 @@ public class MainActivity extends AppCompatActivity {
                 data = new ArrayList<>();
                 data.add((String) json.get("fullURL"));
                 data.add((String) json.get("title"));
-                data.add((String) json.get("name"));
                 data.add((String) json.get("description"));
+
+                //data.add((String) json.get("name"));
                 return data;
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
