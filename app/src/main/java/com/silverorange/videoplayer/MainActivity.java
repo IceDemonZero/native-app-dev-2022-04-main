@@ -3,7 +3,6 @@ package com.silverorange.videoplayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Spanned;
-import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.widget.TextView;
 
@@ -12,7 +11,6 @@ import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 
 import org.commonmark.node.Node;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,11 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
         fetcher.execute();
 
         markwon = Markwon.create(this);
-
     }
 
     private void onBackgroundTaskDataObtained(List<String> results) {
@@ -62,13 +56,14 @@ public class MainActivity extends AppCompatActivity {
         videoPlayer.addMediaItem(mediaItem);
         videoPlayer.prepare();//videoPlayer.play();
 
+        String text  = results.get(1) + "\n\n" + results.get(3) + "\n\n" + results.get(2);
         // parse markdown to commonmark-java Node
-        final Node node = markwon.parse(results.get(2));
+        final Node node = markwon.parse(text);
         // create styled text from parsed Node
         final Spanned markdown = markwon.render(node);
         // use it on a TextView
         markwon.setParsedMarkdown(description, markdown);
-        //description.setText(results.get(1) + "\n" + markdown);
+
     }
 
     private class DataFetcher extends AsyncTask<Void,Void,List<String>> {
@@ -83,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
                 data.add((String) json.get("fullURL"));
                 data.add((String) json.get("title"));
                 data.add((String) json.get("description"));
-
-                //data.add((String) json.get("name"));
+                JSONObject author = json.getJSONObject("author");
+                data.add((String) author.get("name"));
                 return data;
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
@@ -115,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<String> result) {
             super.onPostExecute(result);
-            System.out.println("AM I WORK");
             MainActivity.this.onBackgroundTaskDataObtained(data);
         }
     }
