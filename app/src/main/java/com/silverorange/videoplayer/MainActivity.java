@@ -11,6 +11,7 @@ import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 
 import org.commonmark.node.Node;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -51,12 +52,13 @@ public class MainActivity extends AppCompatActivity {
         markwon = Markwon.create(this);
     }
 
-    private void onBackgroundTaskDataObtained(List<String> results) {
-        MediaItem mediaItem = MediaItem.fromUri(results.get(0));
+    private void onBackgroundTaskDataObtained(List<Video> results) {
+        MediaItem mediaItem = MediaItem.fromUri(results.get(0).getUrl());
         videoPlayer.addMediaItem(mediaItem);
         videoPlayer.prepare();//videoPlayer.play();
 
-        String text  = results.get(1) + "\n\n" + results.get(3) + "\n\n" + results.get(2);
+        String text  = results.get(0).getTitle() + "\n\n" + results.get(0).getName() + "\n\n"
+                + results.get(0).getDescription();
         // parse markdown to commonmark-java Node
         final Node node = markwon.parse(text);
         // create styled text from parsed Node
@@ -66,20 +68,29 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private class DataFetcher extends AsyncTask<Void,Void,List<String>> {
-        List<String> data;
+    private class DataFetcher extends AsyncTask<Void,Void,List<Video>> {
+        private List<Video> data;
+
         @Override
-        protected List<String> doInBackground(Void... voids) {
-            JSONObject json = null;
+        protected List<Video> doInBackground(Void... voids) {
+            JSONObject json [] = null;
             try {
                 json = readJsonFromUrl("http://192.168.2.46:4000/videos");
-                System.out.println("ARE YOU READY" + json.toString());
+                //System.out.println("ARE YOU READY" + json.toString());
+
                 data = new ArrayList<>();
-                data.add((String) json.get("fullURL"));
-                data.add((String) json.get("title"));
-                data.add((String) json.get("description"));
-                JSONObject author = json.getJSONObject("author");
-                data.add((String) author.get("name"));
+                for (JSONObject jsonObject : json) {
+                    JSONObject author = jsonObject.getJSONObject("author");
+                    data.add(new Video(jsonObject.getString("fullURL"),
+                            jsonObject.getString("title"),
+                            author.getString("name"),
+                            jsonObject.getString("publishedAt"),
+                            jsonObject.getString("description")));
+                }
+
+               // System.out.println(json.get("title"));
+                //data.add((String) author.get("name"));
+                System.out.println(data.size());
                 return data;
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
@@ -89,50 +100,32 @@ public class MainActivity extends AppCompatActivity {
         private String readAll(Reader rd) throws IOException {
             StringBuilder sb = new StringBuilder();
             int cp;
-            while ((cp = rd.read()) != -1) {
+            while ((cp = rd.read()) != -1)
                 sb.append((char) cp);
-            }
             return sb.toString();
         }
 
-        public JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
+        public JSONObject[] readJsonFromUrl(String url) throws IOException, JSONException {
             try (InputStream is = new URL(url).openStream()) {
                 BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
                 String jsonText = readAll(rd);
 
                 jsonText = jsonText.substring(1, jsonText.length() - 1);
                 System.out.println("TO DO NOW: " + jsonText);
-                JSONObject json = new JSONObject(jsonText);
-                return json;
+                String videos [] = jsonText.split( "\\},");
+                JSONObject jsons [] = new JSONObject[videos.length];
+                for (int i = 0; i < videos.length; i++) {
+                    if (i != videos.length - 1) videos[i] = videos[i] +  "}";
+                    jsons[i] = new JSONObject(videos[i]);
+                }                //JSONObject json = new JSONObject(jsonText);
+                return jsons;
             }
         }
 
         @Override
-        protected void onPostExecute(List<String> result) {
+        protected void onPostExecute(List<Video> result) {
             super.onPostExecute(result);
             MainActivity.this.onBackgroundTaskDataObtained(data);
         }
     }
-
-   /* public void loadVideos () {
-        String data = "";
-        try {
-            URL url = new URL("http://localhost:4000/videos");
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            InputStream inputStream = httpURLConnection.getInputStream();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-            String line = "";
-
-            int index = 0;
-            int character = 'a';
-            while ((line = bufferedReader.readLine()) != null) {//line = bufferedReader.readLine();
-                data = data + line;
-            }
-            String splits [] = line.split("fullURL |description |title ");
-            JSONObject object = new JSONObject(data);
-        } catch (JSONException | IOException e) {
-            e.printStackTrace();
-        }
-    }*/
 }
