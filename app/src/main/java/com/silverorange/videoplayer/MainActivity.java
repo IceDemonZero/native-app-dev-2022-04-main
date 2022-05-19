@@ -31,6 +31,10 @@ import java.util.List;
 import androidx.appcompat.app.AppCompatActivity;
 import io.noties.markwon.Markwon;
 
+/**
+ * Handles the UI and functionality for the video player
+ * @author Jay
+ */
 public class MainActivity extends AppCompatActivity {
 
     // UI related global variables
@@ -100,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (index != videos.size() - 1) {
                     index++;
+                    isLoaded = false;
 
                     MediaItem mediaItem = MediaItem.fromUri(videos.get(index).getUrl());
                     videoPlayer.setMediaItem(mediaItem);
@@ -117,8 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     final Spanned markdown = markwon.render(node);
                     // use it on a TextView
                     markwon.setParsedMarkdown(description, markdown);
-                    if (index == videos.size() - 1) // If at the end of the list of videos
-                        next.setVisibility(View.INVISIBLE);
+                    isLoaded = true;
                 }
             }
         });
@@ -128,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (index != 0) {
                     index--;
+                    isLoaded = false;
 
                     MediaItem mediaItem = MediaItem.fromUri(videos.get(index).getUrl());
                     videoPlayer.setMediaItem(mediaItem);
@@ -146,8 +151,7 @@ public class MainActivity extends AppCompatActivity {
                     final Spanned markdown = markwon.render(node);
                     // use it on a TextView
                     markwon.setParsedMarkdown(description, markdown);
-                    if (index == 0) // If at the end of the list of videos
-                        previous.setVisibility(View.INVISIBLE);
+                    isLoaded = true;
                 }
             }
         });
@@ -181,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * The class responsible for fetching data from the server
+     * @author Jay
      */
     private class DataFetcher extends AsyncTask<Void,Void,List<Video>> {
         private List<Video> videosRetrieved; // Videos currently stored
