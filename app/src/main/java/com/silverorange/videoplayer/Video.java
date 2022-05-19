@@ -8,7 +8,6 @@ import java.time.*;
 
 /**
  * This class holds all the data necessary to represent a video
- * @author Jay
  */
 public class Video {
     private String url;

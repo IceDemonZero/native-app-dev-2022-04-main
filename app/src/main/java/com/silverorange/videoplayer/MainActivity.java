@@ -33,7 +33,6 @@ import io.noties.markwon.Markwon;
 
 /**
  * Handles the UI and functionality for the video player
- * @author Jay
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -185,7 +184,6 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * The class responsible for fetching data from the server
-     * @author Jay
      */
     private class DataFetcher extends AsyncTask<Void,Void,List<Video>> {
         private List<Video> videosRetrieved; // Videos currently stored
