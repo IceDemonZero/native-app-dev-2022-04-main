@@ -2,8 +2,14 @@ package com.silverorange.videoplayer;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.time.*;
 
+/**
+ * This class holds all the data necessary to represent a video
+ * @author Jay
+ */
 public class Video {
     private String url;
     private String title;
@@ -42,19 +48,13 @@ public class Video {
         this.name = name;
     }
 
+    /**
+     * @return the date for the video
+     * @throws ParseException
+     */
     public Date getDate() throws ParseException {
-        String [] dateTime = date.split("T");
-        String [] dividedDate = dateTime[0].split("-");
-        String dateFormatted = "";
-
-        for (int i = 0; i < dividedDate.length; i++)
-            if (i != dividedDate.length - 1)
-                dateFormatted = dateFormatted + dividedDate[i] + "/";
-            else
-                dateFormatted = dateFormatted + dividedDate[i];
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        Date strDate = sdf.parse(dateFormatted);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        Date strDate = sdf.parse(date);
         return strDate;
     }
 
@@ -62,6 +62,11 @@ public class Video {
         this.date = date;
     }
 
+    /**
+     * @param otherDate
+     * @return if the given video is made after the other video
+     * @throws ParseException
+     */
     public boolean isDateAfter (Date otherDate) throws ParseException {
         return getDate().after(otherDate);
     }
