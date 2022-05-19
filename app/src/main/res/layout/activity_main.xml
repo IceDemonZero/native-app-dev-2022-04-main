@@ -50,12 +50,22 @@
         app:layout_constraintTop_toBottomOf="@id/videoView" />
 
     <ImageButton
+        android:id="@+id/pause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        app:layout_constraintBottom_toBottomOf="@+id/videoView"
+        app:layout_constraintEnd_toEndOf="@+id/videoView"
+        app:layout_constraintStart_toStartOf="@+id/videoView"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:srcCompat="@drawable/ic_pause" />
+
+    <ImageButton
         android:id="@+id/play"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:labelFor="@+id/play"
         android:layout_marginBottom="18dp"
-        app:circularflow_defaultRadius="20dp"
         app:layout_constraintBottom_toBottomOf="@+id/videoView"
         app:layout_constraintEnd_toEndOf="@+id/videoView"
         app:layout_constraintStart_toStartOf="@+id/videoView"
